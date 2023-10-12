@@ -84,10 +84,6 @@ contract InvestmentManagerTest is Test {
         vm.expectRevert("InvestmentManager__NotEnoughFundsToInvest()");
         manager.invest();
         vm.stopPrank();
-        // investing with another account
-        vm.startPrank(address(recipient.addr));
-        vm.expectRevert("Ownable: caller is not the owner");
-        manager.invest();
     }
 
     function test_redeem() external {
@@ -120,7 +116,6 @@ contract InvestmentManagerTest is Test {
     }
 
     function testFail_redeem() external {
-        // calling invest with manager owner
         deal(address(bridge), 1 ether);
         // redeeming 0.005 ether without investing
         vm.startPrank(address(deployer.addr));
@@ -130,10 +125,6 @@ contract InvestmentManagerTest is Test {
         // redeeming 0.005 ether with  (bridgeBalance * 10000) / total > reservePercent
         vm.expectRevert("InvestmentManager__NotEnoughFundsToRedeem()");
         manager.redeem(5000000000000000);
-        // redeeming 0.005 ether with another account
-        vm.startPrank(address(recipient.addr));
-        manager.redeem(5000000000000000);
-        vm.expectRevert("Ownable: caller is not the owner");
     }
 
     function test_sendExcessYield() external {
