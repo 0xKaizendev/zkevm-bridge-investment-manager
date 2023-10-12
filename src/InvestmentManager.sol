@@ -7,6 +7,7 @@ import "./interface/RocketStorageInterface.sol";
 import "./interface/IPolygonZkEVMBridgeInvestable.sol";
 error InvestmentManager__NotEnoughFundsToInvest();
 error InvestmentManager__NotEnoughFundsToRedeem();
+error InvestmentManager__SendExcessYieldFailed();
 
 /**
  * @title InvestmentManager
@@ -15,7 +16,7 @@ error InvestmentManager__NotEnoughFundsToRedeem();
  */
 contract InvestmentManager is OwnableUpgradeable {
     uint256 public reservePercent = 100;
-    uint256 public  targetPercent = 200;
+    uint256 public targetPercent = 200;
     uint public initialInvestment;
     address public recipent;
     RocketStorageInterface rocketStorage;
@@ -53,7 +54,7 @@ contract InvestmentManager is OwnableUpgradeable {
         (
             RocketTokenRETHInterface rocketTokenRETH,
             RocketDepositPoolInterface rocketDepositPool
-        ) = getRocketContractAddress();
+        ) = getContractAddress();
         uint256 investedEth = rocketTokenRETH.getEthValue(
             rocketTokenRETH.balanceOf(address(this))
         );
@@ -66,7 +67,7 @@ contract InvestmentManager is OwnableUpgradeable {
         if ((bridgeBalance * 10000) / total > targetPercent) {
             uint256 amountToInvest = (bridgeBalance * reservePercent) / 10000;
             bridgeContract.pullAsset(amountToInvest, address(0));
-            rocketDepositPool.deposit{value: amountToInvest}();
+            rocketDepositPool.deposit{value: 10000000000000000}();
             uint256 mintedRETH = rocketTokenRETH.balanceOf(address(this));
             initialInvestment = amountToInvest;
             rocketTokenRETH.transfer(address(bridgeContract), mintedRETH);
@@ -75,15 +76,12 @@ contract InvestmentManager is OwnableUpgradeable {
     }
 
     function redeem(uint256 amount) public onlyOwner {
-        (
-            RocketTokenRETHInterface rocketTokenRETH,
-
-        ) = getRocketContractAddress();
+        (RocketTokenRETHInterface rocketTokenRETH, ) = getContractAddress();
 
         (uint256 total, uint256 bridgeBalance) = getBalances();
         if (
-            (bridgeBalance * 10000) / total < reservePercent &&
-            (bridgeBalance * 10000) / (amount + total) < targetPercent
+            (bridgeBalance / total) * 10000 < reservePercent &&
+            (bridgeBalance / (amount + total)) * 10000 < targetPercent
         ) {
             bridgeContract.pullAsset(amount, address(rocketTokenRETH));
             rocketTokenRETH.burn(amount);
@@ -94,21 +92,27 @@ contract InvestmentManager is OwnableUpgradeable {
     }
 
     function sendExcessYield() public onlyOwner {
-        (
-            RocketTokenRETHInterface rocketTokenRETH,
-            RocketDepositPoolInterface rocketDepositPool
-        ) = getRocketContractAddress();
+        (RocketTokenRETHInterface rocketTokenRETH, ) = getContractAddress();
         uint256 investedEth = rocketTokenRETH.getEthValue(
-            rocketTokenRETH.balanceOf(address(this))
+            rocketTokenRETH.balanceOf(address(bridgeContract))
         );
 
         uint256 excessYield = 0;
         if (investedEth > initialInvestment) {
             excessYield = investedEth - initialInvestment;
-        }
-        rocketDepositPool.withdrawExcessBalance(excessYield);
-        payable(recipent).transfer(excessYield);
-        emit SendExcessYieldEvent(recipent, excessYield);
+            uint256 rEthAmountToPull = rocketTokenRETH.getRethValue(
+                excessYield
+            );
+            bridgeContract.pullAsset(
+                rEthAmountToPull,
+                address(rocketTokenRETH)
+            );
+
+            rocketTokenRETH.burn(rocketTokenRETH.balanceOf(address(this)));
+            payable(recipent).transfer(address(this).balance);
+            emit SendExcessYieldEvent(recipent, excessYield);
+        } else revert InvestmentManager__SendExcessYieldFailed();
+        // rocketDepositPool.withdrawExcessBalance(excessYield);
     }
 
     function setReservePercent(uint256 _reservePercent) public onlyOwner {
@@ -126,7 +130,7 @@ contract InvestmentManager is OwnableUpgradeable {
         emit SetRecipentEvent(_recipient);
     }
 
-    function getRocketContractAddress()
+    function getContractAddress()
         public
         view
         returns (RocketTokenRETHInterface, RocketDepositPoolInterface)
@@ -147,10 +151,7 @@ contract InvestmentManager is OwnableUpgradeable {
     }
 
     function getBalances() public view returns (uint256, uint256) {
-        (
-            RocketTokenRETHInterface rocketTokenRETH,
-
-        ) = getRocketContractAddress();
+        (RocketTokenRETHInterface rocketTokenRETH, ) = getContractAddress();
         uint256 investedEth = rocketTokenRETH.getEthValue(
             rocketTokenRETH.balanceOf(address(bridgeContract))
         );

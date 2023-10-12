@@ -1,66 +1,41 @@
-## Foundry
+## Polygon zkEVM x RocketPool Investment Manger 
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+contract for staking  some of the underlying ETH in the bridge with RocketPool
 
-Foundry consists of:
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Get started
 
-## Documentation
+### Requirements
 
-https://book.getfoundry.sh/
+This repository is using foundry. You can install foundry via
+[foundryup](https://book.getfoundry.sh/getting-started/installation).
 
-## Usage
 
-### Build
+### Setup
 
-```shell
-$ forge build
+Clone the repository:
+
+```sh
+git clone https://github.com/0xKaizendev/zkevm-bridge-investment-manager.git
+cd zkevm-wsteth/
 ```
 
-### Test
+Install the dependencies:
 
-```shell
-$ forge test
+```sh
+forge install
 ```
 
-### Format
 
-```shell
-$ forge fmt
+### Tests
+
+Create `.env` with the following contents:
+
 ```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
+RPC_URL=""
 ```
+Use the following command to run the test:
 
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+```sh
+forge test
 ```

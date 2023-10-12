@@ -3,7 +3,11 @@ pragma solidity ^0.8.20;
 import "zkevm-contracts/PolygonZkEVMBridge.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-
+/***
+ * @title PolygonZkEVMBridgeInvestable
+ * @author 0xKaizendev
+ * @notice PolygonZkEVMBridgeInvestable is a contract for managing the staking of ether hosted on the PolygonZkEVMBridge
+ */
 contract PolygonZkEVMBridgeInvestable is
     PolygonZkEVMBridge,
     AccessControlUpgradeable
