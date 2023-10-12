@@ -17,7 +17,7 @@ Clone the repository:
 
 ```sh
 git clone https://github.com/0xKaizendev/zkevm-bridge-investment-manager.git
-cd zkevm-wsteth/
+cd zkevm-bridge-investment-manager/
 ```
 
 Install the dependencies:
