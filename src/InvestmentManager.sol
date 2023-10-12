@@ -22,7 +22,7 @@ contract InvestmentManager is OwnableUpgradeable {
     RocketStorageInterface rocketStorage;
     IPolygonZkEVMBridgeInvestable bridgeContract;
     event InvestEvent(address manager, uint256 amount, address token);
-    event RedeemEvent(address manager, uint256 amount, address token);
+    event RedeemEvent( uint256 amount);
     event SendExcessYieldEvent(address to, uint256 amount);
     event SetReservePercentEvent(uint256 amount);
     event SetTargetPercentEvent(uint256 amount);
@@ -49,7 +49,7 @@ contract InvestmentManager is OwnableUpgradeable {
     /**
      * @notice Invest funds on the PolygonZkEVMBridge
      */
-    function invest() public onlyOwner {
+    function invest() public  {
         // RocketPoll contracts should be queried each time they are used
         (
             RocketTokenRETHInterface rocketTokenRETH,
@@ -75,7 +75,7 @@ contract InvestmentManager is OwnableUpgradeable {
         } else revert InvestmentManager__NotEnoughFundsToInvest();
     }
 
-    function redeem(uint256 amount) public onlyOwner {
+    function redeem(uint256 amount) public  {
         (RocketTokenRETHInterface rocketTokenRETH, ) = getContractAddress();
 
         (uint256 total, uint256 bridgeBalance) = getBalances();
@@ -86,9 +86,8 @@ contract InvestmentManager is OwnableUpgradeable {
             bridgeContract.pullAsset(amount, address(rocketTokenRETH));
             rocketTokenRETH.burn(amount);
             bridgeContract.putEth{value: amount}();
-            // emit RedeemEvent(msg.sender, amount, address(0));
+            emit RedeemEvent( amount);
         } else revert InvestmentManager__NotEnoughFundsToRedeem();
-        emit RedeemEvent(msg.sender, amount, address(0));
     }
 
     function sendExcessYield() public onlyOwner {
@@ -112,7 +111,6 @@ contract InvestmentManager is OwnableUpgradeable {
             payable(recipent).transfer(address(this).balance);
             emit SendExcessYieldEvent(recipent, excessYield);
         } else revert InvestmentManager__SendExcessYieldFailed();
-        // rocketDepositPool.withdrawExcessBalance(excessYield);
     }
 
     function setReservePercent(uint256 _reservePercent) public onlyOwner {
