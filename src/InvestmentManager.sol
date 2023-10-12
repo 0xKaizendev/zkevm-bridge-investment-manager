@@ -68,9 +68,7 @@ contract InvestmentManager is OwnableUpgradeable {
             uint256 amountToInvest = (bridgeBalance * reservePercent) / 10000;
             bridgeContract.pullAsset(amountToInvest, address(0));
             rocketDepositPool.deposit{value: 10000000000000000}();
-            uint256 mintedRETH = rocketTokenRETH.balanceOf(address(this));
             initialInvestment = amountToInvest;
-            rocketTokenRETH.transfer(address(bridgeContract), mintedRETH);
             emit InvestEvent(msg.sender, amountToInvest, address(0));
         } else revert InvestmentManager__NotEnoughFundsToInvest();
     }
