@@ -22,7 +22,7 @@ contract InvestmentManager is OwnableUpgradeable {
     RocketStorageInterface rocketStorage;
     IPolygonZkEVMBridgeInvestable bridgeContract;
     event InvestEvent(address manager, uint256 amount, address token);
-    event RedeemEvent( uint256 amount);
+    event RedeemEvent(uint256 amount);
     event SendExcessYieldEvent(address to, uint256 amount);
     event SetReservePercentEvent(uint256 amount);
     event SetTargetPercentEvent(uint256 amount);
@@ -49,7 +49,7 @@ contract InvestmentManager is OwnableUpgradeable {
     /**
      * @notice Invest funds on the PolygonZkEVMBridge
      */
-    function invest() public  {
+    function invest() public {
         // RocketPoll contracts should be queried each time they are used
         (
             RocketTokenRETHInterface rocketTokenRETH,
@@ -73,7 +73,7 @@ contract InvestmentManager is OwnableUpgradeable {
         } else revert InvestmentManager__NotEnoughFundsToInvest();
     }
 
-    function redeem(uint256 amount) public  {
+    function redeem(uint256 amount) public {
         (RocketTokenRETHInterface rocketTokenRETH, ) = getContractAddress();
 
         (uint256 total, uint256 bridgeBalance) = getBalances();
@@ -81,10 +81,10 @@ contract InvestmentManager is OwnableUpgradeable {
             (bridgeBalance / total) * 10000 < reservePercent &&
             (bridgeBalance / (amount + total)) * 10000 < targetPercent
         ) {
-            bridgeContract.pullAsset(amount, address(rocketTokenRETH));
-            rocketTokenRETH.burn(amount);
-            bridgeContract.putEth{value: amount}();
-            emit RedeemEvent( amount);
+            uint256 underlyingAmount = rocketTokenRETH.getRethValue(amount);
+            rocketTokenRETH.burn(underlyingAmount);
+            bridgeContract.putEth{value: address(this).balance}();
+            emit RedeemEvent(amount);
         } else revert InvestmentManager__NotEnoughFundsToRedeem();
     }
 
