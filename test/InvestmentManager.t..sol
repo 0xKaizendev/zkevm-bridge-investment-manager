@@ -72,7 +72,7 @@ contract InvestmentManagerTest is Test {
             .getContractAddress();
         // approxEq is used because of the difference in the amount of rEth after depositing into rocketpool
         assertApproxEqAbs(
-            rocketTokenRETH.balanceOf(address(bridge)),
+            rocketTokenRETH.balanceOf(address(manager)),
             rocketTokenRETH.getRethValue(manager.initialInvestment()),
             500000000000000
         );
@@ -100,7 +100,7 @@ contract InvestmentManagerTest is Test {
             .getContractAddress();
         // approxEq is used because of the difference in the amount of rEth after depositing into rocketpool
         assertApproxEqAbs(
-            rocketTokenRETH.balanceOf(address(bridge)),
+            rocketTokenRETH.balanceOf(address(manager)),
             rocketTokenRETH.getRethValue(manager.initialInvestment()),
             500000000000000
         );
